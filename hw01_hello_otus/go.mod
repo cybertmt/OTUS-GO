@@ -1,4 +1,4 @@
-module hw01_hello_otus
+module hw01
 
 go 1.16
 
