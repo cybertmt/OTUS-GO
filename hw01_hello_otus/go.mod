@@ -1,4 +1,4 @@
-module github.com/cybertmt/OTUS-GO/hw01_hello_otus
+module github.com/cybertmt/OTUS-GO/tree/hw01_hello_otus
 
 go 1.16
 

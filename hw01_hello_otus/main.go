@@ -1,11 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"golang.org/x/example/stringutil"
+	"os"
 )
 
 func main() {
 	// Выводим перевернутую строку "Hello, OTUS!"
-	fmt.Println(stringutil.Reverse("Hello, OTUS!"))
+	os.Stdout.Write([]byte(stringutil.Reverse("Hello, OTUS!")))
 }
