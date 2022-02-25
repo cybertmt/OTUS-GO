@@ -7,6 +7,6 @@ import (
 )
 
 func main() {
-	// Выводим в стандартный вывод перевернутую строку "Hello, OTUS!"
-	os.Stdout.Write([]byte(stringutil.Reverse("Hello, OTUS!")))
+	// Системный вывод перевернутой строки "Hello, OTUS!"
+	_, _ = os.Stdout.Write([]byte(stringutil.Reverse("Hello, OTUS!")))
 }
