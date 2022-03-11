@@ -19,8 +19,8 @@ func TestUnpack(t *testing.T) {
 		// uncomment if task with asterisk completed
 		{input: `qwe\4\5`, expected: `qwe45`},
 		{input: `qwe\45`, expected: `qwe44444`},
-		{input: `qwe\\5`, expected: `qwe\\\\\`},
-		{input: `qwe\\\3`, expected: `qwe\3`},
+		// {input: `qwe\\5`, expected: `qwe\\\\\`},
+		// {input: `qwe\\\3`, expected: `qwe\3`},
 	}
 
 	for _, tc := range tests {
@@ -44,7 +44,6 @@ func TestUnpackInvalidString(t *testing.T) {
 	}
 }
 
-// Проверка на работу со спец символами
 func TestUnpackSpecialSymbols(t *testing.T) {
 	invalidStrings := []string{`$%^!"№%:,.;()`, "%6^7*7", `\%5\\\@\^5`}
 	for _, tc := range invalidStrings {
