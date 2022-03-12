@@ -22,9 +22,9 @@ func Unpack(s string) (string, error) {
 		return "", ErrInvalidString
 	}
 
-	// result - возвращаемая удачно распакованная строка
-	// sVal - символ строки сконвертированный в тип string
-	// iVal - символ строки сконвертированный в тип int
+	// result - возвращаемая и удачно распакованная строка
+	// sVal - символ строки, сконвертированный в тип string
+	// iVal - символ строки, сконвертированный в тип int
 	// err - ошибка при конвертациях и приведениях к типу
 	var result, sVal string
 	var iVal int
@@ -35,7 +35,7 @@ func Unpack(s string) (string, error) {
 		// i-ая руна
 		val := runes[i]
 		sVal = string(val)
-		// Если руна является симовлом \
+		// Если руна является симовлом `\` и после нее есть еще руны
 		if sVal == `\` && len(runes)-1 > i {
 			result += string(runes[i+1])
 			i += 2
@@ -49,7 +49,7 @@ func Unpack(s string) (string, error) {
 			if err != nil {
 				return "", ErrInvalidString
 			}
-			// Если после цифры идет еще одна цифра
+			// Если после цифры идет еще одна цифра, вернуть ошибку
 			if len(runes)-1 > i && unicode.IsDigit(runes[i+1]) {
 				return "", ErrInvalidString
 			}
