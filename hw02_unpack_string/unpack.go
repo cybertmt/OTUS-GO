@@ -23,59 +23,50 @@ func Unpack(s string) (string, error) {
 	}
 
 	// result - возвращаемая удачно распакованная строка
-	// sVal - символ сконвертированный в тип string
-	// iVal - символ сконвертированный в тип int
+	// sVal - символ строки сконвертированный в тип string
+	// iVal - символ строки сконвертированный в тип int
 	// err - ошибка при конвертациях и приведениях к типу
 	var result, sVal string
 	var iVal int
 	var err error
 
 	// Перебор символов строки
-	for i, val := range runes {
+	for i := 0; i < len(runes); {
+		// i-ая руна
+		val := runes[i]
+		sVal = string(val)
+		// Если руна является симовлом \
+		if sVal == `\` && len(runes)-1 > i {
+			result += string(runes[i+1])
+			i += 2
+			continue
+		}
 		// Если руна является цифрой
-		fmt.Println(i, string(val))
 		if unicode.IsDigit(val) {
 			// Преведение необходимых типов
-			sVal = string(val)
 			iVal, err = strconv.Atoi(sVal)
 
 			if err != nil {
 				return "", ErrInvalidString
 			}
-
-			if i > 0 && string(runes[i-1]) == `\` {
-				result = result[:len(result)-1]
-				result += string(val)
-				continue
-			}
-
 			// Если после цифры идет еще одна цифра
 			if len(runes)-1 > i && unicode.IsDigit(runes[i+1]) {
 				return "", ErrInvalidString
 			}
-
 			// Повторить символ перед цифрой указанное число раз
-			result = result[:len(result)-1]
-			result += strings.Repeat(string(runes[i-1]), iVal)
-			fmt.Println(result)
+			result = result[:len(result)-1] + strings.Repeat(string(runes[i-1]), iVal)
+			i++
 			continue
 		}
-		if i > 0 && string(runes[i-1]) == `\` && string(runes[i]) == `\` {
-			result = result[:len(result)-1]
-			result += string(val)
-			fmt.Println("Hit!")
-			fmt.Println(result)
-		}
-
 		// Добавить символ в результирующую строку
 		result += string(val)
-		fmt.Println(result)
+		i++
 	}
 	return result, nil
 }
 
 func main() {
-	s := `qwe\\\3`
+	s := `\ad5e\\5\7`
 	result, err := Unpack(s)
 	if err != nil {
 		fmt.Println(err)
