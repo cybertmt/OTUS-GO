@@ -37,6 +37,7 @@ func Unpack(s string) (string, error) {
 		sVal = string(val)
 		// Если руна является симовлом `\` и после нее есть еще руны
 		if sVal == `\` && len(runes)-1 > i {
+			// Добавляем в результирующую строку следующий за `\` экранированный символ
 			result += string(runes[i+1])
 			i += 2
 			continue
