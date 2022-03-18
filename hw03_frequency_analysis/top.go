@@ -6,7 +6,7 @@ import (
 )
 
 func Top10(str string) []string {
-	// Для пустого запроса сразу возвращаем nil слайс
+	// Для пустого запроса возвращаем nil слайс
 	if str == "" {
 		return []string{}
 	}
