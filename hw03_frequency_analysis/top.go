@@ -22,7 +22,7 @@ func Top10(str string) []string {
 	// Map для подсчета слов в тексте [слово]количество
 	wordMap := make(map[string]int)
 	// Структура для подсчета количества слов,
-	// используется для сортировки по значениям полей
+	// используется при сортировке по значениям полей
 	type wordStruct struct {
 		Word  string
 		Count int
