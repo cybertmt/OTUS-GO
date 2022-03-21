@@ -10,12 +10,19 @@ func Top10(str string) []string {
 	if str == "" {
 		return []string{}
 	}
+
+	// Для задания со '*' очищаем текст от знаков и конвертируем заглавные буквы в строчные
+	for _, c := range []string{"!", "'", ",", ".", "- "} {
+		str = strings.ReplaceAll(str, c, " ")
+	}
+	str = strings.ToLower(str)
+
 	// Слайс слов, возвращаемый функцией Top10
 	strResult := make([]string, 0)
 	// Map для подсчета слов в тексте [слово]количество
 	wordMap := make(map[string]int)
 	// Структура для подсчета количества слов,
-	// используется для сортировки по значениям
+	// используется для сортировки по значениям полей
 	type wordStruct struct {
 		Word  string
 		Count int
@@ -24,9 +31,9 @@ func Top10(str string) []string {
 	strSlice := strings.Fields(str)
 	// Наполняем map с подсчетом количества слов
 	for _, s := range strSlice {
-		value, ok := wordMap[s]
+		_, ok := wordMap[s]
 		if ok {
-			wordMap[s] = value + 1
+			wordMap[s]++
 			continue
 		}
 		wordMap[s] = 1
@@ -36,7 +43,7 @@ func Top10(str string) []string {
 	for k, v := range wordMap {
 		wordStructSlice = append(wordStructSlice, wordStruct{k, v})
 	}
-	// Сортируем полученный слайс по количеству, затем равные значения лексикографически
+	// Сортируем полученный слайс по полю 'количество', затем по полю 'слово' лексикографически
 	sort.Slice(wordStructSlice, func(i, j int) bool {
 		if wordStructSlice[i].Count != wordStructSlice[j].Count {
 			return wordStructSlice[i].Count > wordStructSlice[j].Count
