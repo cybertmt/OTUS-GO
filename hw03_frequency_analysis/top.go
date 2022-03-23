@@ -1,6 +1,7 @@
 package main
 
 import (
+	"regexp"
 	"sort"
 	"strings"
 )
@@ -11,12 +12,15 @@ func Top10(str string) []string {
 		return []string{}
 	}
 	// Для задания со '*' очищаем текст от знаков и конвертируем заглавные буквы в строчные
-	for _, c := range []string{"!", "'", ",", ".", "- "} {
-		str = strings.ReplaceAll(str, c, " ")
-	}
+	re := regexp.MustCompile(`[;,&?!'.:]|\s-`)
+	str = re.ReplaceAllString(str, " ")
 	str = strings.ToLower(str)
 	// Разбираем исходную строку на слайс слов с пробелом в качестве разделителя
 	strSlice := strings.Fields(str)
+	// Если слайс остался пустой, возвращаем nil слайс
+	if len(strSlice) == 0 {
+		return []string{}
+	}
 	// Map для подсчета слов в тексте [слово]количество
 	wordMap := make(map[string]int)
 	// Наполняем map с подсчетом количества слов
