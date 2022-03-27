@@ -114,4 +114,11 @@ func TestTop10(t *testing.T) {
 			require.NotEqual(t, expected, Top10(text))
 		}
 	})
+	t.Run("Top2", func(t *testing.T) {
+		expected := []string{
+			"привет", // 3
+			"мир",    // 2
+		}
+		require.Equal(t, expected, Top10("привет, привет! привет мир мир?"))
+	})
 }

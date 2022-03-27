@@ -6,13 +6,14 @@ import (
 	"strings"
 )
 
+var re = regexp.MustCompile(`[;,&?!'.:]|\s-`)
+
 func Top10(str string) []string {
 	// Для пустого запроса возвращаем nil слайс
 	if str == "" {
 		return []string{}
 	}
 	// Для задания со '*' очищаем текст от знаков и конвертируем заглавные буквы в строчные
-	re := regexp.MustCompile(`[;,&?!'.:]|\s-`)
 	str = re.ReplaceAllString(str, " ")
 	str = strings.ToLower(str)
 	// Разбираем исходную строку на слайс слов с пробелом в качестве разделителя
@@ -48,8 +49,8 @@ func Top10(str string) []string {
 	// Слайс слов, возвращаемый функцией Top10
 	strResult := make([]string, 0, 10)
 	// Первые 10 слов отсортированного слайса добавляем в результирующий слайс и возвращаем
-	for _, v := range wordStructSlice[:10] {
-		strResult = append(strResult, v.Word)
+	for i := 0; i < 10 && len(wordStructSlice)-i > 0; i++ {
+		strResult = append(strResult, wordStructSlice[i].Word)
 	}
 	return strResult
 }
