@@ -1,4 +1,4 @@
-package hw04lrucache
+package main
 
 import (
 	"testing"
@@ -47,5 +47,26 @@ func TestList(t *testing.T) {
 			elems = append(elems, i.Value.(int))
 		}
 		require.Equal(t, []int{70, 80, 60, 40, 10, 30, 50}, elems)
+	})
+
+	t.Run("total remove", func(t *testing.T) {
+		l := NewList()
+
+		l.PushFront(10) // [10]
+		l.PushBack(20)  // [10, 20]
+		l.PushBack(30)  // [10, 20, 30]
+		l.PushBack(40)  // [10, 20, 30, 40]
+		require.Equal(t, 4, l.Len())
+
+		l.Remove(l.Front()) // [20, 30, 40]
+		require.Equal(t, 3, l.Len())
+		l.Remove(l.Back()) // [20, 30]
+		require.Equal(t, 2, l.Len())
+		l.Remove(l.Front()) // [30]
+		require.Equal(t, 1, l.Len())
+		l.Remove(l.Back()) // []
+		require.Equal(t, 0, l.Len())
+		l.Remove(l.Front()) // []
+		require.Equal(t, 0, l.Len())
 	})
 }
