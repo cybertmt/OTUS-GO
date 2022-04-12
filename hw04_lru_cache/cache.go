@@ -4,8 +4,6 @@ import "sync"
 
 type Key string
 
-var mu sync.Mutex
-
 type Cache interface {
 	Set(key Key, value interface{}) bool
 	Get(key Key) (interface{}, bool)
@@ -16,6 +14,7 @@ type lruCache struct {
 	capacity int
 	queue    List
 	items    map[Key]*ListItem
+	mu       sync.Mutex
 }
 
 type cacheItem struct {
@@ -43,8 +42,8 @@ func (l *lruCache) Clear() {
 // Set добавляет элемент в кэш.
 func (l *lruCache) Set(key Key, value interface{}) bool {
 	// Блокируем кэш для изменения/чтения.
-	mu.Lock()
-	defer mu.Unlock()
+	l.mu.Lock()
+	defer l.mu.Unlock()
 	// Проверяем
 	i, ok := l.items[key]
 	// Если ключ уже присутвует в кэше, обновляем значение элемента в списке и словаре cacheItemMap .
@@ -70,8 +69,8 @@ func (l *lruCache) Set(key Key, value interface{}) bool {
 // Get получает значение элемента из кэша.
 func (l *lruCache) Get(key Key) (interface{}, bool) {
 	// Блокируем кэш для изменения/чтения.
-	mu.Lock()
-	defer mu.Unlock()
+	l.mu.Lock()
+	defer l.mu.Unlock()
 	// Если элемент присутвует в кэше, передвигаем элемент в начало списка.
 	// Возвращаем значение элемента и true.
 	i, ok := l.items[key]
