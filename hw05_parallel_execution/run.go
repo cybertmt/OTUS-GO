@@ -9,143 +9,90 @@ var ErrErrorsLimitExceeded = errors.New("errors limit exceeded")
 
 type Task func() error
 
+func worker(wg *sync.WaitGroup, taskChan <-chan Task, doneChan <-chan bool, errChan chan<- error) {
+	defer wg.Done()
+	for {
+		// Останавливаемся по сигналу <-doneChan
+		// или когда закончатся задания.
+		select {
+		case <-doneChan:
+			return
+		default:
+			t, ok := <-taskChan
+			if !ok {
+				return
+			}
+			e := t()
+			if e != nil {
+				errChan <- e
+			}
+		}
+	}
+}
+
 // Run starts tasks in n goroutines and stops its work when receiving m errors from tasks.
 func Run(tasks []Task, n, m int) error {
+	// taskChan - канал задач.
+	// errChan - канал ошибок выполнения задач.
+	// resChan - канал с возвращаемым значением.
+	// doneChan - канал для остановки работы горутин.
 	taskChan := make(chan Task, len(tasks))
-	errChan := make(chan error, n)
-	resChan := make(chan error)
+	errChan := make(chan error, len(tasks))
+	resChan := make(chan error, 1)
 	doneChan := make(chan bool)
 	wg := &sync.WaitGroup{}
 
+	// Consumer worker pool.
 	for i := 1; i <= n; i++ {
 		wg.Add(1)
-		go func() {
-			// fmt.Printf("Worker %v started\n", i)
-			defer wg.Done()
-			for {
-				select {
-				case <-doneChan:
-					// fmt.Printf("Worker %v finished cause of error, stopping\n", i)
-					return
-				default:
-					t, ok := <-taskChan
-					if !ok {
-						// fmt.Printf("Worker %v got nothing to do, stopping\n", i)
-						// close(errChan)
-						// resChan <- nil
-						return
-					}
-					e := t()
-					// fmt.Printf("Worker %v got %v\n", i, e)
-					if e != nil {
-						errChan <- e
-						continue
-					}
-					// fmt.Printf("Worker %v got %v\n", i, e)
-					continue
-				}
-			}
-		}()
+		go worker(wg, taskChan, doneChan, errChan)
 	}
 
+	// Producer - отправляет задачи в канал taskChan.
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		for _, t := range tasks {
 			taskChan <- t
 		}
 		close(taskChan)
 	}()
 
+	// Горутина - счетчик ошибок.
+	wg2 := &sync.WaitGroup{}
+	wg2.Add(1)
 	go func() {
+		defer wg2.Done()
+		defer close(doneChan)
+		defer close(resChan)
+		// Если m <=0, ошибки не считаем.
+		if m <= 0 {
+			for {
+				_, ok := <-errChan
+				if !ok {
+					resChan <- nil
+					return
+				}
+			}
+		}
+		// Считаем ошибки.
+		// Если ошибки не превысили порог, отправляем nil в канал результата.
 		for j := 0; j < m; j++ {
 			_, ok := <-errChan
 			if !ok {
-				// fmt.Printf("End of tasks because of %v\n", ok)
-				close(doneChan)
-				close(resChan)
+				resChan <- nil
 				return
 			}
-			// fmt.Println("Catch error!", e)
 		}
-		// fmt.Println("Too much errors!")
-		// for z := 0; z < n; z++ {
-		//	doneChan <- true
-		// }
-
-		close(doneChan)
-		// close(errChan)
+		// При превышении порога ошибок (m) останавливаем горутины
+		// и отправляем ошибку в канал результата.
 		resChan <- ErrErrorsLimitExceeded
-		close(resChan)
 	}()
-	// close(resChan)
-
+	// Ждем завершения worker pool и горутины заданий.
 	wg.Wait()
+	// Закрываем канал ошибок и ждем завершения горутины подсчета ошибок.
 	close(errChan)
-	// fmt.Println("Closing ErrChan")
-
-	// for res := range resChan {
-	//	if res != nil {
-	//		return res
-	//	}
-	// }
-	// for res := range resChan {
-	//	if res != nil {
-	//		return res
-	//	}
-	// }
-
-	// result := <-resChan
-	// fmt.Println("Got result:", result)
+	wg2.Wait()
 
 	return <-resChan
 }
-
-//  func main() {
-//	b := true
-//	//b = false
-//	var tasksCount, n, m int
-//	tasks := make([]Task, 0, tasksCount)
-//	if b {
-//		tasksCount = 20
-//		n = 50
-//		m = 19
-//		tasks = make([]Task, 0, tasksCount)
-//
-//		var runTasksCount int32
-//
-//		for i := 0; i < tasksCount; i++ {
-//			err := fmt.Errorf("error from task %d", i)
-//			tasks = append(tasks, func() error {
-//				time.Sleep(time.Millisecond * time.Duration(rand.Intn(100)))
-//				atomic.AddInt32(&runTasksCount, 1)
-//				return err
-//			})
-//		}
-//
-//	} else {
-//		tasksCount = 20
-//		n = 10
-//		m = 1
-//		tasks = make([]Task, 0, tasksCount)
-//
-//		var runTasksCount int32
-//		var sumTime time.Duration
-//
-//		for i := 0; i < tasksCount; i++ {
-//			taskSleep := time.Millisecond * time.Duration(rand.Intn(100))
-//			sumTime += taskSleep
-//
-//			tasks = append(tasks, func() error {
-//				time.Sleep(taskSleep)
-//				atomic.AddInt32(&runTasksCount, 1)
-//				return nil
-//			})
-//		}
-//	}
-//
-//	res := Run(tasks, n, m)
-//	if res != nil {
-//		fmt.Println(res)
-//		return
-//	}
-//	fmt.Println("Work Complete")
-// }
