@@ -9,6 +9,7 @@ var ErrErrorsLimitExceeded = errors.New("errors limit exceeded")
 
 type Task func() error
 
+// worker обработчик заданий Task.
 func worker(wg *sync.WaitGroup, taskChan <-chan Task, doneChan <-chan bool, errChan chan<- error) {
 	defer wg.Done()
 	for {
@@ -30,14 +31,14 @@ func worker(wg *sync.WaitGroup, taskChan <-chan Task, doneChan <-chan bool, errC
 	}
 }
 
-// Run starts tasks in n goroutines and stops its work when receiving m errors from tasks.
+// Run запускает задачи в n горутинах и останавливает их работу при получении m ошибок.
 func Run(tasks []Task, n, m int) error {
 	// taskChan - канал задач.
 	// errChan - канал ошибок выполнения задач.
 	// resChan - канал с возвращаемым значением.
 	// doneChan - канал для остановки работы горутин.
-	taskChan := make(chan Task, len(tasks))
-	errChan := make(chan error, len(tasks))
+	taskChan := make(chan Task, n+m)
+	errChan := make(chan error, n+m)
 	resChan := make(chan error, 1)
 	doneChan := make(chan bool)
 	wg := &sync.WaitGroup{}
@@ -63,8 +64,8 @@ func Run(tasks []Task, n, m int) error {
 	wg2.Add(1)
 	go func() {
 		defer wg2.Done()
-		defer close(doneChan)
 		defer close(resChan)
+		defer close(doneChan)
 		// Если m <=0, ошибки не считаем.
 		if m <= 0 {
 			for {
