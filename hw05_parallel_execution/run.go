@@ -95,5 +95,6 @@ func Run(tasks []Task, n, m int) error {
 	close(errChan)
 	wg2.Wait()
 
+	// Слушаем результат.
 	return <-resChan
 }
