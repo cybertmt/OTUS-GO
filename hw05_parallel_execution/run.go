@@ -10,8 +10,8 @@ var ErrErrorsLimitExceeded = errors.New("errors limit exceeded")
 type Task func() error
 
 // worker обработчик заданий Task.
-func worker(wg *sync.WaitGroup, taskChan <-chan Task, doneChan <-chan bool, errChan chan<- error) {
-	defer wg.Done()
+func worker(wg1 *sync.WaitGroup, taskChan <-chan Task, doneChan <-chan bool, errChan chan<- error) {
+	defer wg1.Done()
 	for {
 		// Останавливаемся по сигналу <-doneChan
 		// или когда закончатся задания.
@@ -37,22 +37,22 @@ func Run(tasks []Task, n, m int) error {
 	// errChan - канал ошибок выполнения задач.
 	// resChan - канал с возвращаемым значением.
 	// doneChan - канал для остановки работы горутин.
-	taskChan := make(chan Task, n+m)
+	taskChan := make(chan Task, len(tasks))
 	errChan := make(chan error, n+m)
 	resChan := make(chan error, 1)
 	doneChan := make(chan bool)
-	wg := &sync.WaitGroup{}
+	wg1 := &sync.WaitGroup{}
 
 	// Consumer worker pool.
 	for i := 1; i <= n; i++ {
-		wg.Add(1)
-		go worker(wg, taskChan, doneChan, errChan)
+		wg1.Add(1)
+		go worker(wg1, taskChan, doneChan, errChan)
 	}
 
 	// Producer - отправляет задачи в канал taskChan.
-	wg.Add(1)
+	wg1.Add(1)
 	go func() {
-		defer wg.Done()
+		defer wg1.Done()
 		for _, t := range tasks {
 			taskChan <- t
 		}
@@ -90,7 +90,7 @@ func Run(tasks []Task, n, m int) error {
 		resChan <- ErrErrorsLimitExceeded
 	}()
 	// Ждем завершения worker pool и горутины заданий.
-	wg.Wait()
+	wg1.Wait()
 	// Закрываем канал ошибок и ждем завершения горутины подсчета ошибок.
 	close(errChan)
 	wg2.Wait()
