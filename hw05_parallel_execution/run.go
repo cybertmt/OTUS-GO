@@ -20,7 +20,7 @@ func Run(tasks []Task, n, m int) error {
 	maxErr := int32(m)
 	// Если m<=0, устанавливаем недостижимый лимит ошибок.
 	if m <= 0 {
-		maxErr = int32(len(tasks) + 1)
+		maxErr = int32(len(tasks) + n)
 	}
 	wg := &sync.WaitGroup{}
 	// Producer. Горутина отправляет задачи из массива tasks в канал TaskChan.
@@ -36,7 +36,7 @@ func Run(tasks []Task, n, m int) error {
 	// Consumers. Горутины читают и выолняют задачи из канала taskChan
 	// Возвращают ErrErrorsLimitExceeded при превышении лимитиа ошибок.
 	wg.Add(n)
-	for j := 1; j <= n; j++ {
+	for i := 0; i < n; i++ {
 		go func() {
 			defer wg.Done()
 			for atomic.LoadInt32(&gotErr) < maxErr {
