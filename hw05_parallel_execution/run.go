@@ -3,57 +3,98 @@ package main
 import (
 	"errors"
 	"sync"
-	"sync/atomic"
 )
+
+var ErrErrorsLimitExceeded = errors.New("errors limit exceeded")
 
 type Task func() error
 
-var ErrErrorsLimitExceeded = errors.New("error limit exceeded")
+// worker обработчик заданий Task.
+func worker(wg1 *sync.WaitGroup, taskChan <-chan Task, doneChan <-chan bool, errChan chan<- error) {
+	defer wg1.Done()
+	for {
+		// Останавливаемся по сигналу <-doneChan
+		// или когда закончатся задания.
+		select {
+		case <-doneChan:
+			return
+		default:
+			t, ok := <-taskChan
+			if !ok {
+				return
+			}
+			e := t()
+			if e != nil {
+				errChan <- e
+			}
+		}
+	}
+}
 
+// Run запускает задачи в n горутинах и останавливает их работу при получении m ошибок.
 func Run(tasks []Task, n, m int) error {
-	// taskChan - канал с задачами Task.
-	// result - результирующая ошибка функции Run.
-	// gotErr, maxErr - кол-во полученных ошибок и установленный лимит ошибок.
+	// taskChan - канал задач.
+	// errChan - канал ошибок выполнения задач.
+	// resChan - канал с возвращаемым значением.
+	// doneChan - канал для остановки работы горутин.
 	taskChan := make(chan Task, len(tasks))
-	var result error
-	var gotErr int32
-	maxErr := int32(m)
-	// Если m<=0, устанавливаем недостижимый лимит ошибок.
-	if m <= 0 {
-		maxErr = int32(len(tasks) + 1)
+	errChan := make(chan error, n+m)
+	resChan := make(chan error, 1)
+	doneChan := make(chan bool)
+	wg1 := &sync.WaitGroup{}
+
+	// Consumer worker pool.
+	for i := 1; i <= n; i++ {
+		wg1.Add(1)
+		go worker(wg1, taskChan, doneChan, errChan)
 	}
 
-	wg := &sync.WaitGroup{}
-	// Producer. Горутина отправляет задачи из массива tasks в канал TaskChan.
-	wg.Add(1)
+	// Producer - отправляет задачи в канал taskChan.
+	wg1.Add(1)
 	go func() {
-		defer wg.Done()
+		defer wg1.Done()
 		for _, t := range tasks {
 			taskChan <- t
 		}
 		close(taskChan)
 	}()
 
-	// Consumers. Горутины читают и выолняют задачи из канала taskChan
-	// Возвращают ErrErrorsLimitExceeded при превышении лимитиа ошибок.
-	wg.Add(n)
-	for j := 1; j <= n; j++ {
-		go func() {
-			defer wg.Done()
-			for gotErr < maxErr {
-				t, ok := <-taskChan
+	// Горутина - счетчик ошибок.
+	wg2 := &sync.WaitGroup{}
+	wg2.Add(1)
+	go func() {
+		defer wg2.Done()
+		defer close(resChan)
+		defer close(doneChan)
+		// Если m <=0, ошибки не считаем.
+		if m <= 0 {
+			for {
+				_, ok := <-errChan
 				if !ok {
+					resChan <- nil
 					return
 				}
-				err := t()
-				if err != nil {
-					atomic.AddInt32(&gotErr, 1)
-				}
 			}
-			result = ErrErrorsLimitExceeded
-		}()
-	}
-	// Ждем завершения горутин и возвращаем результат.
-	wg.Wait()
-	return result
+		}
+		// Считаем ошибки.
+		// Если ошибки не превысили порог, отправляем nil в канал результата.
+		for j := 0; j < m; j++ {
+			_, ok := <-errChan
+			if !ok {
+				resChan <- nil
+				return
+			}
+		}
+		// При превышении порога ошибок (m) останавливаем горутины
+		// и отправляем ошибку в канал результата.
+		resChan <- ErrErrorsLimitExceeded
+	}()
+	// Ждем завершения worker pool и горутины заданий.
+	wg1.Wait()
+	// Закрываем канал ошибок и ждем завершения горутины подсчета ошибок.
+	close(errChan)
+	wg2.Wait()
+
+	// Слушаем результат.
+	return <-resChan
 }
