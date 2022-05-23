@@ -22,7 +22,7 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 		if os.IsNotExist(err) {
 			return ErrSrcFileNotFound
 		}
-		return ErrUnsupportedFile
+		return err
 	}
 	defer src.Close()
 
