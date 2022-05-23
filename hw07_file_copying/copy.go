@@ -58,7 +58,7 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 	if limit+offset > size {
 		barSize = size - offset
 	}
-	// Запускаем progressbar. Проксируем в него src io.Reader.
+	// Запускаем progressbar. Проксируем в него src в io.Reader.
 	bar := pb.Full.Start64(barSize)
 	barReader := bar.NewProxyReader(src)
 	// Выставляем offset и копируем src в out через progressbar.
