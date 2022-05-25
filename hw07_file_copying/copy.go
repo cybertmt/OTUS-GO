@@ -63,7 +63,10 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 	barReader := bar.NewProxyReader(src)
 	// Выставляем offset и копируем src в out через progressbar.
 	src.Seek(offset, 0)
-	io.CopyN(out, barReader, limit)
+	_, err = io.CopyN(out, barReader, limit)
+	if err != nil {
+		return err
+	}
 	bar.Finish()
 
 	return nil

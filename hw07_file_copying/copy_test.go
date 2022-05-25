@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"io/ioutil"
 	"log"
 	"os"
 	"testing"
@@ -38,13 +37,13 @@ func TestCopy(t *testing.T) {
 		offset = 0
 
 		Copy(fromPath, toPath, offset, limit)
-		f1, err1 := ioutil.ReadFile(toPath)
+		f1, err1 := os.ReadFile(toPath)
 
 		if err1 != nil {
 			log.Fatal(err1)
 		}
 
-		f2, err2 := ioutil.ReadFile("testdata/out_offset0_limit0.txt")
+		f2, err2 := os.ReadFile("testdata/out_offset0_limit0.txt")
 
 		if err2 != nil {
 			log.Fatal(err2)
@@ -57,13 +56,13 @@ func TestCopy(t *testing.T) {
 		offset = 0
 
 		Copy(fromPath, toPath, offset, limit)
-		f1, err1 := ioutil.ReadFile(toPath)
+		f1, err1 := os.ReadFile(toPath)
 
 		if err1 != nil {
 			log.Fatal(err1)
 		}
 
-		f2, err2 := ioutil.ReadFile("testdata/out_offset0_limit10.txt")
+		f2, err2 := os.ReadFile("testdata/out_offset0_limit10.txt")
 
 		if err2 != nil {
 			log.Fatal(err2)
@@ -76,13 +75,13 @@ func TestCopy(t *testing.T) {
 		offset = 0
 
 		Copy(fromPath, toPath, offset, limit)
-		f1, err1 := ioutil.ReadFile(toPath)
+		f1, err1 := os.ReadFile(toPath)
 
 		if err1 != nil {
 			log.Fatal(err1)
 		}
 
-		f2, err2 := ioutil.ReadFile("testdata/out_offset0_limit1000.txt")
+		f2, err2 := os.ReadFile("testdata/out_offset0_limit1000.txt")
 
 		if err2 != nil {
 			log.Fatal(err2)
@@ -95,13 +94,13 @@ func TestCopy(t *testing.T) {
 		offset = 0
 
 		Copy(fromPath, toPath, offset, limit)
-		f1, err1 := ioutil.ReadFile(toPath)
+		f1, err1 := os.ReadFile(toPath)
 
 		if err1 != nil {
 			log.Fatal(err1)
 		}
 
-		f2, err2 := ioutil.ReadFile("testdata/out_offset0_limit10000.txt")
+		f2, err2 := os.ReadFile("testdata/out_offset0_limit10000.txt")
 
 		if err2 != nil {
 			log.Fatal(err2)
@@ -114,13 +113,13 @@ func TestCopy(t *testing.T) {
 		offset = 100
 
 		Copy(fromPath, toPath, offset, limit)
-		f1, err1 := ioutil.ReadFile(toPath)
+		f1, err1 := os.ReadFile(toPath)
 
 		if err1 != nil {
 			log.Fatal(err1)
 		}
 
-		f2, err2 := ioutil.ReadFile("testdata/out_offset100_limit1000.txt")
+		f2, err2 := os.ReadFile("testdata/out_offset100_limit1000.txt")
 
 		if err2 != nil {
 			log.Fatal(err2)
@@ -133,13 +132,13 @@ func TestCopy(t *testing.T) {
 		offset = 6000
 
 		Copy(fromPath, toPath, offset, limit)
-		f1, err1 := ioutil.ReadFile(toPath)
+		f1, err1 := os.ReadFile(toPath)
 
 		if err1 != nil {
 			log.Fatal(err1)
 		}
 
-		f2, err2 := ioutil.ReadFile("testdata/out_offset6000_limit1000.txt")
+		f2, err2 := os.ReadFile("testdata/out_offset6000_limit1000.txt")
 
 		if err2 != nil {
 			log.Fatal(err2)
