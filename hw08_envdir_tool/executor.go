@@ -22,7 +22,7 @@ func RunCmd(cmd []string, env Environment) (returnCode int) {
 		os.Setenv(enVar, value.Value)
 		fmt.Printf("%v=%v\n", enVar, os.Getenv(enVar))
 	}
-	cmdS := exec.Command("git", "commit", "-am", "fix")
+	cmdS := exec.Command("gitss", "commit", "-am", "fix")
 	err := cmdS.Run()
 	if err != nil {
 		log.Fatal(err)
