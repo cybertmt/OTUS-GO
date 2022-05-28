@@ -1,19 +1,23 @@
 package main
 
 import (
-	"fmt"
+	"errors"
+	"log"
+	"os"
 )
 
 func main() {
-	commands := []string{"arg1", "arg2"}
-	dir := "testdata/env"
-	env, err := ReadDir(dir)
-	if err != nil {
-		fmt.Println(err)
-		//return
+	args := os.Args
+	if len(args) < 3 {
+		log.Fatal("Not enough arguments. Usage: go-envdir /path/to/evndir command arg1 arg2...")
 	}
-	i := RunCmd(commands, env)
-
-	//fmt.Println(env)
-	fmt.Println(i)
+	env, err := ReadDir(args[1])
+	if err != nil {
+		if !errors.Is(err, ErrWrongFileName) {
+			log.Fatal(err)
+		}
+		log.Fatal(err)
+	}
+	exitCode := RunCmd(args[2:], env)
+	os.Exit(exitCode)
 }

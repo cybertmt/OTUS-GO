@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"log"
 	"os"
 	"os/exec"
 )
@@ -12,7 +10,6 @@ func RunCmd(cmd []string, env Environment) (returnCode int) {
 	for enVar, value := range env {
 		if value.NeedRemove {
 			os.Unsetenv(enVar)
-			fmt.Printf("%v=%v\n", enVar, os.Getenv(enVar))
 			continue
 		}
 		_, ok := os.LookupEnv(enVar)
@@ -20,17 +17,19 @@ func RunCmd(cmd []string, env Environment) (returnCode int) {
 			os.Unsetenv(enVar)
 		}
 		os.Setenv(enVar, value.Value)
-		fmt.Printf("%v=%v\n", enVar, os.Getenv(enVar))
 	}
-	cmdS := exec.Command("gitss", "commit", "-am", "fix")
-	err := cmdS.Run()
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Waiting for command to finish...")
-	err = cmdS.Wait() // ошибка выполнения
-	if err != nil {
-		log.Fatal(err)
+
+	name, args := cmd[0], cmd[1:]
+
+	proc := exec.Command(name, args...)
+	proc.Env = append(os.Environ(), args...)
+
+	proc.Stdout = os.Stdout
+	proc.Stderr = os.Stderr
+	proc.Stdin = os.Stdin
+
+	if err := proc.Run(); err != nil {
+		return 1
 	}
 
 	return

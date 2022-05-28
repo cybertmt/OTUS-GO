@@ -3,10 +3,15 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"errors"
+	"fmt"
+	"io"
 	"os"
+	"path/filepath"
 	"strings"
-	"unicode"
 )
+
+var ErrWrongFileName = fmt.Errorf("some env files have wrong names: include '=', skipped")
 
 type Environment map[string]EnvValue
 
@@ -19,7 +24,7 @@ type EnvValue struct {
 // ReadDir reads a specified directory and returns map of env variables.
 // Variables represented as files where filename is name of variable, file first line is a value.
 func ReadDir(dir string) (Environment, error) {
-	envList := make(map[string]EnvValue)
+	envList := make(Environment)
 	files, err := os.ReadDir(dir)
 	if err != nil {
 		return nil, err
@@ -28,21 +33,29 @@ func ReadDir(dir string) (Environment, error) {
 	var fN string
 	var enV EnvValue
 	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
 		fN = file.Name()
-		readFile, err := os.Open(dir + "/" + fN)
+		if strings.Contains(fN, "=") {
+			err = ErrWrongFileName
+			continue
+		}
+		readFile, err := os.Open(filepath.Join(dir, fN))
 		defer func() { readFile.Close() }()
 		if err != nil {
 			return nil, err
 		}
 		rd := bufio.NewReader(readFile)
-		s, _ := rd.ReadString('\n')
+		s, err := rd.ReadString('\n')
+		if err != nil && !errors.Is(err, io.EOF) {
+			return nil, err
+		}
 		if len(s) == 0 {
 			enV.NeedRemove = true
 		}
-		s = strings.TrimRightFunc(s, func(c rune) bool {
-			return unicode.IsSpace(c)
-		})
-		b = bytes.Replace([]byte(s), []byte{0}, []byte{10}, -1)
+		s = strings.TrimRight(s, " \t\n")
+		b = bytes.ReplaceAll([]byte(s), []byte{0}, []byte{10})
 		enV.Value = string(b)
 		envList[fN] = enV
 	}
