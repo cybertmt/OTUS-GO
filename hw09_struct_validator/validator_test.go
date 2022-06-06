@@ -46,16 +46,16 @@ func TestValidate(t *testing.T) {
 		{in: App{Version: "1234"}, expectedErr: ValidationErrors{{Field: "Version", Err: ErrInvalidLen}}},
 		{in: App{Version: "123456"}, expectedErr: ValidationErrors{{Field: "Version", Err: ErrInvalidLen}}},
 		{
-			in:          Response{Code: 505, Body: `{"result":"C большого будуна"}`},
+			in:          Response{Code: 505, Body: `{"result":"Тест"}`},
 			expectedErr: ValidationErrors{{Field: "Code", Err: ErrInvalidIn}},
 		},
 		{in: User{
-			ID:     "12345678_12345678_12345678_12345678",
-			Name:   "Простофиля",
-			Age:    13,
-			Email:  "data@dat123asda.ru",
-			Role:   "dumb guy",
-			Phones: []string{"111111111111111111111111"},
+			ID:     "12345678_",
+			Name:   "Юзер",
+			Age:    17,
+			Email:  "qq@qq123.ru",
+			Role:   "user",
+			Phones: []string{"12345678"},
 			meta:   nil,
 		}, expectedErr: ValidationErrors{
 			{Field: "ID", Err: ErrInvalidLen},
@@ -63,6 +63,15 @@ func TestValidate(t *testing.T) {
 			{Field: "Role", Err: ErrInvalidIn},
 			{Field: "Phones", Err: ErrInvalidLen},
 		}},
+		{in: User{
+			ID:     "123456789012345678901234567890123456",
+			Name:   "User",
+			Age:    19,
+			Email:  "qq@qq.ru",
+			Role:   "admin",
+			Phones: []string{"12345678901"},
+			meta:   nil,
+		}, expectedErr: ValidationErrors{}},
 	}
 
 	for i, tt := range tests {
