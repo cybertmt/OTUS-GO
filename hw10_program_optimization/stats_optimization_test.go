@@ -1,5 +1,3 @@
-// +build bench
-
 package hw10programoptimization
 
 import (
@@ -434,3 +432,19 @@ var expectedBizStat = DomainStat{
 	"zooxo.biz":         33,
 	"zoozzy.biz":        23,
 }
+
+// func BenchmarkGetDomainStat(b *testing.B) {
+// 	r, err := zip.OpenReader("testdata/users.dat.zip")
+// 	require.NoError(b, err)
+// 	defer r.Close()
+
+// 	require.Equal(b, 1, len(r.File))
+
+// 	data, err := r.File[0].Open()
+// 	require.NoError(b, err)
+// 	b.ResetTimer()
+// 	for i := 0; i < b.N; i++ {
+// 		GetDomainStat(data, "biz")
+// 	}
+
+// }

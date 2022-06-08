@@ -21,6 +21,8 @@ type User struct {
 
 type DomainStat map[string]int
 
+var re *regexp.Regexp
+
 func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
 	u, err := getUsers(r)
 	if err != nil {
@@ -50,14 +52,14 @@ func getUsers(r io.Reader) (result users, err error) {
 
 func countDomains(u users, domain string) (DomainStat, error) {
 	result := make(DomainStat)
+	// re = regexp.MustCompile("\\." + domain)
+	re = regexp.MustCompile("\\." + domain)
 
 	for _, user := range u {
-		matched, err := regexp.Match("\\."+domain, []byte(user.Email))
-		if err != nil {
-			return nil, err
-		}
+		matched := re.MatchString(user.Email)
 
 		if matched {
+			//fmt.Println("MATCHED!")
 			num := result[strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])]
 			num++
 			result[strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])] = num
