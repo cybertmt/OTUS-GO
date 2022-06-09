@@ -17,7 +17,7 @@ var (
 	_ easyjson.Marshaler
 )
 
-func easyjsonE3ab7953DecodeGithubComCybertmtOTUSGOHw10ProgramOptimization(in *jlexer.Lexer, out *User) {
+func easyjson9e1087fdDecodeGithubComBrisk84HomeWorkHw10ProgramOptimization(in *jlexer.Lexer, out *User) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -36,7 +36,7 @@ func easyjsonE3ab7953DecodeGithubComCybertmtOTUSGOHw10ProgramOptimization(in *jl
 			continue
 		}
 		switch key {
-		case "ID":
+		case "Id":
 			out.ID = int(in.Int())
 		case "Name":
 			out.Name = string(in.String())
@@ -60,12 +60,12 @@ func easyjsonE3ab7953DecodeGithubComCybertmtOTUSGOHw10ProgramOptimization(in *jl
 		in.Consumed()
 	}
 }
-func easyjsonE3ab7953EncodeGithubComCybertmtOTUSGOHw10ProgramOptimization(out *jwriter.Writer, in User) {
+func easyjson9e1087fdEncodeGithubComBrisk84HomeWorkHw10ProgramOptimization(out *jwriter.Writer, in User) {
 	out.RawByte('{')
 	first := true
 	_ = first
 	{
-		const prefix string = ",\"ID\":"
+		const prefix string = ",\"Id\":"
 		out.RawString(prefix[1:])
 		out.Int(int(in.ID))
 	}
@@ -105,23 +105,23 @@ func easyjsonE3ab7953EncodeGithubComCybertmtOTUSGOHw10ProgramOptimization(out *j
 // MarshalJSON supports json.Marshaler interface
 func (v User) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonE3ab7953EncodeGithubComCybertmtOTUSGOHw10ProgramOptimization(&w, v)
+	easyjson9e1087fdEncodeGithubComBrisk84HomeWorkHw10ProgramOptimization(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v User) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonE3ab7953EncodeGithubComCybertmtOTUSGOHw10ProgramOptimization(w, v)
+	easyjson9e1087fdEncodeGithubComBrisk84HomeWorkHw10ProgramOptimization(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *User) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonE3ab7953DecodeGithubComCybertmtOTUSGOHw10ProgramOptimization(&r, v)
+	easyjson9e1087fdDecodeGithubComBrisk84HomeWorkHw10ProgramOptimization(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *User) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonE3ab7953DecodeGithubComCybertmtOTUSGOHw10ProgramOptimization(l, v)
+	easyjson9e1087fdDecodeGithubComBrisk84HomeWorkHw10ProgramOptimization(l, v)
 }
