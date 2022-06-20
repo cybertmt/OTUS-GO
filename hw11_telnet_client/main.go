@@ -7,7 +7,6 @@ import (
 	"net"
 	"os"
 	"os/signal"
-	"syscall"
 	"time"
 )
 
@@ -31,36 +30,30 @@ func main() {
 
 	host, port := os.Args[2], os.Args[3]
 	client := NewTelnetClient(net.JoinHostPort(host, port), timeout, os.Stdin, os.Stdout)
-	if client.Connect() != nil {
-		log.Fatalln(client.Connect())
+	if err := client.Connect(); err != nil {
+		log.Fatalln(err)
 	}
-	defer func() {
-		if client.Connect() != nil {
-			log.Fatalln(client.Connect())
+
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
+
+	go func() {
+		if err := client.Send(); err != nil {
+			log.Printf("error during send: %v", err)
+		} else {
+			log.Printf("EOF")
 		}
+		cancel()
 	}()
 
-	ctx, cancel := context.WithCancel(context.Background())
-	go worker(client.Receive, cancel)
-	go worker(client.Send, cancel)
-
-	sigCh := make(chan os.Signal, 1)
-	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
-
-	select {
-	case <-sigCh:
+	go func() {
+		if err := client.Receive(); err != nil {
+			log.Printf("error during receive: %v", err)
+		} else {
+			log.Printf("connection was closed by peer")
+		}
 		cancel()
-		signal.Stop(sigCh)
-		return
+	}()
 
-	case <-ctx.Done():
-		close(sigCh)
-		return
-	}
-}
-
-func worker(handler func() error, cancel context.CancelFunc) {
-	if err := handler(); err != nil {
-		cancel()
-	}
+	<-ctx.Done()
 }

@@ -8,17 +8,17 @@ import (
 
 type TelnetClient interface {
 	Connect() error
-	io.Closer
+	Close() error
 	Send() error
 	Receive() error
 }
 
 type Client struct {
-	address    string
-	timeout    time.Duration
-	in         io.ReadCloser
-	out        io.Writer
-	connection net.Conn
+	address string
+	timeout time.Duration
+	in      io.ReadCloser
+	out     io.Writer
+	conn    net.Conn
 }
 
 func NewTelnetClient(address string, timeout time.Duration, in io.ReadCloser, out io.Writer) TelnetClient {
@@ -31,20 +31,20 @@ func NewTelnetClient(address string, timeout time.Duration, in io.ReadCloser, ou
 }
 
 func (c *Client) Connect() (err error) {
-	c.connection, err = net.DialTimeout("tcp", c.address, c.timeout)
+	c.conn, err = net.DialTimeout("tcp", c.address, c.timeout)
 	return err
 }
 
 func (c *Client) Close() error {
-	return c.connection.Close()
+	return c.conn.Close()
 }
 
 func (c *Client) Send() error {
-	_, err := io.Copy(c.connection, c.in)
+	_, err := io.Copy(c.conn, c.in)
 	return err
 }
 
 func (c *Client) Receive() error {
-	_, err := io.Copy(c.out, c.connection)
+	_, err := io.Copy(c.out, c.conn)
 	return err
 }
