@@ -34,8 +34,8 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
-	defer cancel()
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
 
 	go func() {
 		if err := client.Send(); err != nil {
@@ -43,7 +43,7 @@ func main() {
 		} else {
 			log.Printf("EOF")
 		}
-		cancel()
+		stop()
 	}()
 
 	go func() {
@@ -52,7 +52,7 @@ func main() {
 		} else {
 			log.Printf("connection was closed by peer")
 		}
-		cancel()
+		stop()
 	}()
 
 	<-ctx.Done()
