@@ -58,7 +58,9 @@ func (i Validator) PrepareIntValidation(tag string) (*IntValidation, []error) {
 	var validationErrors []error
 	for _, term := range terms {
 		splitTag := strings.Split(term, ":")
-
+		if len(splitTag) < 2 {
+			continue
+		}
 		tagExp := splitTag[0]
 		tagValue := splitTag[1]
 
@@ -100,7 +102,9 @@ func (i Validator) PrepareStringValidation(tag string) (*StringValidation, []err
 	var validationErrors []error
 	for _, term := range terms {
 		splitTag := strings.Split(term, ":")
-
+		if len(splitTag) < 2 {
+			continue
+		}
 		tagExp := splitTag[0]
 		tagValue := splitTag[1]
 
