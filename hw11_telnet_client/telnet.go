@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// TelnetClient сигнатура заменена (io.Close) по причине линтера.
 type TelnetClient interface {
 	Connect() error
 	Close() error

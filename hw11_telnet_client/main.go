@@ -23,20 +23,16 @@ func init() {
 
 func main() {
 	flag.Parse()
-
 	if len(os.Args) < minArgs {
 		log.Fatalf("Expected at least %d arguments", minArgs)
 	}
-
 	host, port := os.Args[2], os.Args[3]
 	client := NewTelnetClient(net.JoinHostPort(host, port), timeout, os.Stdin, os.Stdout)
 	if err := client.Connect(); err != nil {
 		log.Fatalln(err)
 	}
-
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
-
 	go func() {
 		if err := client.Send(); err != nil {
 			log.Printf("error during send: %v", err)
@@ -45,7 +41,6 @@ func main() {
 		}
 		stop()
 	}()
-
 	go func() {
 		if err := client.Receive(); err != nil {
 			log.Printf("error during receive: %v", err)
@@ -54,6 +49,5 @@ func main() {
 		}
 		stop()
 	}()
-
 	<-ctx.Done()
 }
