@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 type UserRole string
@@ -41,20 +43,46 @@ func TestValidate(t *testing.T) {
 		in          interface{}
 		expectedErr error
 	}{
+		{in: App{Version: "1234"}, expectedErr: ValidationErrors{{Field: "Version", Err: ErrInvalidLen}}},
+		{in: App{Version: "123456"}, expectedErr: ValidationErrors{{Field: "Version", Err: ErrInvalidLen}}},
 		{
-			// Place your code here.
+			in:          Response{Code: 505, Body: `{"result":"Тест"}`},
+			expectedErr: ValidationErrors{{Field: "Code", Err: ErrInvalidIn}},
 		},
-		// ...
-		// Place your code here.
+		{in: User{
+			ID:     "12345678_",
+			Name:   "Юзер",
+			Age:    17,
+			Email:  "qq@qq123.ru",
+			Role:   "user",
+			Phones: []string{"12345678"},
+			meta:   nil,
+		}, expectedErr: ValidationErrors{
+			{Field: "ID", Err: ErrInvalidLen},
+			{Field: "Age", Err: ErrInvalidMin},
+			{Field: "Role", Err: ErrInvalidIn},
+			{Field: "Phones", Err: ErrInvalidLen},
+		}},
+		{in: User{
+			ID:     "123456789012345678901234567890123456",
+			Name:   "User",
+			Age:    19,
+			Email:  "qq@qq.ru",
+			Role:   "admin",
+			Phones: []string{"12345678901"},
+			meta:   nil,
+		}, expectedErr: ValidationErrors{}},
 	}
 
 	for i, tt := range tests {
 		t.Run(fmt.Sprintf("case %d", i), func(t *testing.T) {
 			tt := tt
 			t.Parallel()
+			var validator Validator
 
-			// Place your code here.
-			_ = tt
+			err := validator.Validate(tt.in)
+			require.Error(t, err)
+			require.EqualError(t, err, tt.expectedErr.Error())
 		})
 	}
 }
