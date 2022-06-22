@@ -9,9 +9,9 @@ import (
 
 	sqlstorage "github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/storage"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v4"
+	pgx "github.com/jackc/pgx/v4"
 	"github.com/stretchr/testify/require"
-	"gopkg.in/yaml.v3"
+	yaml "gopkg.in/yaml.v3"
 )
 
 const DefaultConfigFile = "configs/config.yaml"

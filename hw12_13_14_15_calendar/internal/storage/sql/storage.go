@@ -9,7 +9,7 @@ import (
 	"github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/app"
 	"github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/storage"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v4"
+	pgx "github.com/jackc/pgx/v4"
 )
 
 type Storage struct {
