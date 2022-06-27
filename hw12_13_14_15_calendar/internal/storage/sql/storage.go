@@ -132,85 +132,13 @@ order by date
 	return events, nil
 }
 
-func (s *Storage) FindOnDay(day time.Time) ([]storage.Event, error) { //nolint:dupl
-	var events []storage.Event
-
-	from := day.AddDate(0, 0, 1).Format(time.RFC3339)
-	to := day.AddDate(0, 0, 1).Format(time.RFC3339)
-
-	rows, err := s.findOnDate(from, to)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var e storage.Event
-		if err := rows.Scan(
-			&e.ID,
-			&e.Title,
-			&e.StartedAt,
-			&e.FinishedAt,
-			&e.Description,
-			&e.UserID,
-			&e.Notify,
-		); err != nil {
-			return nil, fmt.Errorf("unable to transform array result into struct: %w", err)
-		}
-
-		events = append(events, e)
-	}
-
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return events, nil
-}
-
-func (s *Storage) FindOnWeek(dayStart time.Time) ([]storage.Event, error) { //nolint:dupl
-	var events []storage.Event
-
-	from := dayStart.AddDate(0, 0, 7).Format(time.RFC3339)
-	to := dayStart.AddDate(0, 0, 7).Format(time.RFC3339)
-
-	rows, err := s.findOnDate(from, to)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var e storage.Event
-		if err := rows.Scan(
-			&e.ID,
-			&e.Title,
-			&e.StartedAt,
-			&e.FinishedAt,
-			&e.Description,
-			&e.UserID,
-			&e.Notify,
-		); err != nil {
-			return nil, fmt.Errorf("unable to transform array result into struct: %w", err)
-		}
-
-		events = append(events, e)
-	}
-
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return events, nil
-}
-
-func (s *Storage) FindOnMonth(dayStart time.Time) ([]storage.Event, error) { //nolint:dupl
+func (s *Storage) FindAtMonth(dayStart time.Time) ([]storage.Event, error) { //nolint:dupl
 	var events []storage.Event
 
 	from := dayStart.AddDate(0, 1, 0).Format(time.RFC3339)
 	to := dayStart.AddDate(0, 1, 0).Format(time.RFC3339)
 
-	rows, err := s.findOnDate(from, to)
+	rows, err := s.findAtDate(from, to)
 	if err != nil {
 		return nil, err
 	}
@@ -240,7 +168,7 @@ func (s *Storage) FindOnMonth(dayStart time.Time) ([]storage.Event, error) { //n
 	return events, nil
 }
 
-func (s *Storage) findOnDate(from, to string) (pgx.Rows, error) {
+func (s *Storage) findAtDate(from, to string) (pgx.Rows, error) {
 	const searchSQL = `
 select id, title, started_at, finished_at, description, user_id, notify 
 from events

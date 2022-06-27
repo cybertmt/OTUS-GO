@@ -56,37 +56,7 @@ func (s *Storage) FindAll() ([]storage.Event, error) {
 	return events, nil
 }
 
-func (s *Storage) FindOnDay(day time.Time) ([]storage.Event, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	interval := day.AddDate(0, 0, 1).Sub(day)
-	var events []storage.Event
-	for _, event := range s.events {
-		diff := event.StartedAt.Sub(day)
-		if diff >= 0 && diff <= interval {
-			events = append(events, event)
-		}
-	}
-	return events, nil
-}
-
-func (s *Storage) FindOnWeek(dayStart time.Time) ([]storage.Event, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	interval := dayStart.AddDate(0, 0, 7).Sub(dayStart)
-	var events []storage.Event
-	for _, event := range s.events {
-		diff := event.StartedAt.Sub(dayStart)
-		if diff >= 0 && diff <= interval {
-			events = append(events, event)
-		}
-	}
-	return events, nil
-}
-
-func (s *Storage) FindOnMonth(dayStart time.Time) ([]storage.Event, error) {
+func (s *Storage) FindAtMonth(dayStart time.Time) ([]storage.Event, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 

@@ -1,7 +1,7 @@
 version: "3"
 services:
   postgres:
-    container_name: vlyagusha-postgres
+    container_name: cyber-postgres
     image: postgres:14.2
     restart: always
     environment:
