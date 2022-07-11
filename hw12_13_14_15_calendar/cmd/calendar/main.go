@@ -12,8 +12,6 @@ import (
 	internalconfig "github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/config"
 	internallogger "github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/logger"
 	internalhttp "github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/server/http"
-	memorystorage "github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/storage/memory"
-	sqlstorage "github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/storage/sql"
 )
 
 var configFile string
@@ -43,7 +41,7 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer cancel()
 
-	storage, err := createStorage(ctx, *config)
+	storage, err := app.CreateStorage(ctx, *config)
 	if err != nil {
 		cancel()
 		log.Fatalf("Failed to create storage: %s", err) //nolint:gocritic
@@ -69,21 +67,4 @@ func main() {
 		cancel()
 		log.Fatalf("Failed to start http server: %s", err)
 	}
-}
-
-func createStorage(ctx context.Context, config internalconfig.Config) (app.Storage, error) {
-	var storage app.Storage
-	var err error
-	switch config.Storage.Type {
-	case internalconfig.InMemory:
-		storage = memorystorage.New()
-	case internalconfig.SQL:
-		storage, err = sqlstorage.New(ctx, config.Storage.Dsn).Connect(ctx)
-		if err != nil {
-			return nil, err
-		}
-	default:
-		log.Fatalf("Unknown storage type: %s\n", config.Storage.Type)
-	}
-	return storage, nil
 }

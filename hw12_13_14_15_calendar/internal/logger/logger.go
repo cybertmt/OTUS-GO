@@ -75,6 +75,7 @@ func parseLogFile(filename string) (io.Writer, error) {
 		return os.Stdout, nil
 	default:
 		file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o666)
+		defer file.Close()
 		if err != nil {
 			return nil, err
 		}
