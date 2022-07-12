@@ -2,13 +2,12 @@ package logger
 
 import (
 	"fmt"
+	"github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/config"
+	"github.com/sirupsen/logrus"
 	"io"
 	"net/http"
 	"os"
 	"time"
-
-	"github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/config"
-	"github.com/sirupsen/logrus"
 )
 
 type Logger struct {

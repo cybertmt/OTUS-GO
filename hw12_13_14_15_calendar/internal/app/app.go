@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"net/http"
 	"time"
 
 	"github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/storage"
@@ -18,6 +19,7 @@ type Logger interface {
 	Info(format string, params ...interface{})
 	Warn(format string, params ...interface{})
 	Error(format string, params ...interface{})
+	LogHTTPRequest(r *http.Request, code, length int)
 }
 
 type Storage interface {

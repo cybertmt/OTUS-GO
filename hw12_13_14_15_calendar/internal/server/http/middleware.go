@@ -1,6 +1,7 @@
 package internalhttp
 
 import (
+	"github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/app"
 	"net/http"
 )
 
@@ -22,7 +23,7 @@ func (w *ResponseWriter) Write(data []byte) (int, error) {
 	return n, err
 }
 
-func loggingMiddleware(next http.Handler, log Logger) http.Handler {
+func loggingMiddleware(next http.Handler, log app.Logger) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		myWriter := &ResponseWriter{w, 0, 0}
 		next.ServeHTTP(myWriter, r)
