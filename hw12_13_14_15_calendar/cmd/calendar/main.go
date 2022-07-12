@@ -3,21 +3,22 @@ package main
 import (
 	"context"
 	"flag"
-	"os"
+	internalstore "github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/storage/production"
+	"log"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/app"
-	"github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/logger"
-	internalhttp "github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/server/http"
-	memorystorage "github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/storage/memory"
+	internalapp "github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/app"
+	internalconfig "github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/config"
+	internallogger "github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/logger"
+	internalhttp "github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/server/http"
 )
 
 var configFile string
 
 func init() {
-	flag.StringVar(&configFile, "config", "/etc/calendar/config.toml", "Path to configuration file")
+	flag.StringVar(&configFile, "config", "configs/config.yaml", "Path to configuration file")
 }
 
 func main() {
@@ -28,17 +29,27 @@ func main() {
 		return
 	}
 
-	config := NewConfig()
-	logg := logger.New(config.Logger.Level)
+	config, err := internalconfig.LoadConfig(configFile)
+	if err != nil {
+		log.Fatalf("Failed to load config: %s", err)
+	}
 
-	storage := memorystorage.New()
-	calendar := app.New(logg, storage)
+	logg, err := internallogger.New(config.Logger)
+	if err != nil {
+		log.Fatalf("Failed to create logger: %s", err)
+	}
 
-	server := internalhttp.NewServer(logg, calendar)
-
-	ctx, cancel := signal.NotifyContext(context.Background(),
-		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer cancel()
+
+	storage, err := internalstore.CreateStorage(ctx, *config)
+	if err != nil {
+		cancel()
+		log.Fatalf("Failed to create storage: %s", err) //nolint:gocritic
+	}
+
+	calendar := internalapp.New(logg, storage)
+	server := internalhttp.NewServer(logg, calendar, config.HTTP.Host, config.HTTP.Port)
 
 	go func() {
 		<-ctx.Done()
@@ -54,8 +65,7 @@ func main() {
 	logg.Info("calendar is running...")
 
 	if err := server.Start(ctx); err != nil {
-		logg.Error("failed to start http server: " + err.Error())
 		cancel()
-		os.Exit(1) //nolint:gocritic
+		log.Fatalf("Failed to start http server: %s", err)
 	}
 }
