@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	internalgrpc "github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/server/grpc"
 	internalstore "github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/storage/production"
 	"log"
 	"os/signal"
@@ -49,7 +50,28 @@ func main() {
 	}
 
 	calendar := internalapp.New(logg, storage)
+
+	serverGrpc := internalgrpc.NewServer(logg, calendar, config.HTTP.Host, config.GRPC.Port)
+
+	go func() {
+		if err := serverGrpc.Start(); err != nil {
+			logg.Error("failed to start grpc server: " + err.Error())
+		}
+	}()
+
+	go func() {
+		<-ctx.Done()
+		serverGrpc.Stop()
+	}()
+
 	server := internalhttp.NewServer(logg, calendar, config.HTTP.Host, config.HTTP.Port)
+
+	go func() {
+		if err := server.Start(ctx); err != nil {
+			logg.Error("failed to start grpc server: " + err.Error())
+			cancel()
+		}
+	}()
 
 	go func() {
 		<-ctx.Done()
@@ -68,4 +90,5 @@ func main() {
 		cancel()
 		log.Fatalf("Failed to start http server: %s", err)
 	}
+	<-ctx.Done()
 }

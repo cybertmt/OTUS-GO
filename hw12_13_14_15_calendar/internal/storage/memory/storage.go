@@ -71,6 +71,17 @@ func (s *Storage) FindAtMonth(dayStart time.Time) ([]storage.Event, error) {
 	return events, nil
 }
 
+func (s *Storage) Find(id uuid.UUID) (*storage.Event, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	if event, ok := s.events[id]; ok {
+		return &event, nil
+	}
+
+	return nil, storage.ErrorEventNotFound
+}
+
 func New() *Storage {
 	return &Storage{
 		events: make(map[uuid.UUID]storage.Event),

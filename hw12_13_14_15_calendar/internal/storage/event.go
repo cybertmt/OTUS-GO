@@ -10,6 +10,7 @@ import (
 var (
 	ErrEventAlreadyExists = errors.New("event already exists")
 	ErrEventDoesNotExists = errors.New("event does not exist")
+	ErrorEventNotFound    = errors.New("error: event not found")
 )
 
 type Event struct {

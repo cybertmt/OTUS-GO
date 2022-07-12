@@ -2,6 +2,7 @@ package sqlstorage
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -40,10 +41,9 @@ func (s *Storage) Close(ctx context.Context) error {
 }
 
 func (s *Storage) Create(e storage.Event) error {
-	sql := `
-insert into events (id, title, started_at, finished_at, description, user_id, notify) 
-values ($1, $2, $3, $4, $5, $6, $7)
-`
+	sql := `insert into events (id, title, started_at, finished_at, description, user_id, notify) 
+			values ($1, $2, $3, $4, $5, $6, $7)
+			`
 	_, err := s.conn.Exec(
 		s.ctx,
 		sql,
@@ -60,18 +60,17 @@ values ($1, $2, $3, $4, $5, $6, $7)
 }
 
 func (s *Storage) Update(e storage.Event) error {
-	sql := `
-update events 
-set
-    title = $2,
-    started_at = $3,
-    finished_at = $4,
-    description = $5,
-    user_id = $6,
-    notify = $7
-where
-	id = $1
-`
+	sql := `update events 
+			set
+    		title = $2,
+    		started_at = $3,
+    		finished_at = $4,
+    		description = $5,
+    		user_id = $6,
+    		notify = $7
+			where
+			id = $1
+			`
 	_, err := s.conn.Exec(
 		s.ctx,
 		sql,
@@ -88,20 +87,46 @@ where
 }
 
 func (s *Storage) Delete(id uuid.UUID) error {
-	sql := "DELETE FROM events WHERE id = $1"
+	sql := `DELETE FROM events WHERE id = $1`
 	_, err := s.conn.Exec(s.ctx, sql, id)
 
 	return err
 }
 
+func (s *Storage) Find(id uuid.UUID) (*storage.Event, error) {
+	var e storage.Event
+
+	sql := `select id, title, started_at, finished_at, description, user_id, notify
+			from events
+			where id = $1
+			`
+	err := s.conn.QueryRow(s.ctx, sql, id).Scan(
+		&e.ID,
+		&e.Title,
+		&e.StartedAt,
+		&e.FinishedAt,
+		&e.Description,
+		&e.UserID,
+		&e.Notify,
+	)
+
+	if err == nil {
+		return &e, nil
+	}
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, storage.ErrorEventNotFound
+	}
+
+	return nil, fmt.Errorf("failed to scan SQL result into struct: %w", err)
+}
+
 func (s *Storage) FindAll() ([]storage.Event, error) {
 	var events []storage.Event
 
-	sql := `
-select id, title, started_at, finished_at, description, user_id, notify 
-from events
-order by date
-`
+	sql := `select id, title, started_at, finished_at, description, user_id, notify 
+			from events
+			order by date
+			`
 	rows, err := s.conn.Query(s.ctx, sql)
 	if err != nil {
 		return nil, err
@@ -169,11 +194,10 @@ func (s *Storage) FindAtMonth(dayStart time.Time) ([]storage.Event, error) { //n
 }
 
 func (s *Storage) findAtDate(from, to string) (pgx.Rows, error) {
-	const searchSQL = `
-select id, title, started_at, finished_at, description, user_id, notify 
-from events
-where started_at >= $1 and started_at <= $2
-order by date
-`
+	const searchSQL = `select id, title, started_at, finished_at, description, user_id, notify 
+						from events
+						where started_at >= $1 and started_at <= $2
+						order by date
+						`
 	return s.conn.Query(s.ctx, searchSQL, from, to)
 }
