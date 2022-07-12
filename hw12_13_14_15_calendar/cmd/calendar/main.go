@@ -3,12 +3,13 @@ package main
 import (
 	"context"
 	"flag"
+	internalstore "github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/storage/production"
 	"log"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/app"
+	internalapp "github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/app"
 	internalconfig "github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/config"
 	internallogger "github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/logger"
 	internalhttp "github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/server/http"
@@ -41,13 +42,13 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer cancel()
 
-	storage, err := app.CreateStorage(ctx, *config)
+	storage, err := internalstore.CreateStorage(ctx, *config)
 	if err != nil {
 		cancel()
 		log.Fatalf("Failed to create storage: %s", err) //nolint:gocritic
 	}
 
-	calendar := app.New(logg, storage)
+	calendar := internalapp.New(logg, storage)
 	server := internalhttp.NewServer(logg, calendar, config.HTTP.Host, config.HTTP.Port)
 
 	go func() {

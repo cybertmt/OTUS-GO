@@ -2,10 +2,6 @@ package app
 
 import (
 	"context"
-	internalconfig "github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/config"
-	memorystorage "github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/storage/memory"
-	sqlstorage "github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/storage/sql"
-	"log"
 	"time"
 
 	"github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/storage"
@@ -37,23 +33,6 @@ func New(logger Logger, storage Storage) *App {
 		Logger:  logger,
 		Storage: storage,
 	}
-}
-
-func CreateStorage(ctx context.Context, config internalconfig.Config) (Storage, error) {
-	var storage Storage
-	var err error
-	switch config.Storage.Type {
-	case internalconfig.InMemory:
-		storage = memorystorage.New()
-	case internalconfig.SQL:
-		storage, err = sqlstorage.New(ctx, config.Storage.Dsn).Connect(ctx)
-		if err != nil {
-			return nil, err
-		}
-	default:
-		log.Fatalf("Unknown storage type: %s\n", config.Storage.Type)
-	}
-	return storage, nil
 }
 
 func (a *App) CreateEvent(ctx context.Context, id, title string) error {
