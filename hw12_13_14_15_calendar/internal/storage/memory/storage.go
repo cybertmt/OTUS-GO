@@ -1,6 +1,7 @@
 package memorystorage
 
 import (
+	"sort"
 	"sync"
 	"time"
 
@@ -11,6 +12,12 @@ import (
 type Storage struct {
 	mu     sync.RWMutex
 	events map[uuid.UUID]storage.Event
+}
+
+func New() *Storage {
+	return &Storage{
+		events: make(map[uuid.UUID]storage.Event),
+	}
 }
 
 func (s *Storage) Create(e storage.Event) error {
@@ -53,6 +60,49 @@ func (s *Storage) FindAll() ([]storage.Event, error) {
 	for _, event := range s.events {
 		events = append(events, event)
 	}
+
+	sort.Slice(events, func(i, j int) bool {
+		return events[i].StartedAt.Unix() < events[j].StartedAt.Unix()
+	})
+
+	return events, nil
+}
+
+func (s *Storage) FindAtDay(day time.Time) ([]storage.Event, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	interval := day.AddDate(0, 0, 1).Sub(day)
+	var events []storage.Event
+	for _, event := range s.events {
+		diff := event.StartedAt.Sub(day)
+		if diff >= 0 && diff <= interval {
+			events = append(events, event)
+		}
+	}
+	sort.Slice(events, func(i, j int) bool {
+		return events[i].StartedAt.Unix() < events[j].StartedAt.Unix()
+	})
+
+	return events, nil
+}
+
+func (s *Storage) FindAtWeek(dayStart time.Time) ([]storage.Event, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	interval := dayStart.AddDate(0, 0, 7).Sub(dayStart)
+	var events []storage.Event
+	for _, event := range s.events {
+		diff := event.StartedAt.Sub(dayStart)
+		if diff >= 0 && diff <= interval {
+			events = append(events, event)
+		}
+	}
+	sort.Slice(events, func(i, j int) bool {
+		return events[i].StartedAt.Unix() < events[j].StartedAt.Unix()
+	})
+
 	return events, nil
 }
 
@@ -68,6 +118,10 @@ func (s *Storage) FindAtMonth(dayStart time.Time) ([]storage.Event, error) {
 			events = append(events, event)
 		}
 	}
+	sort.Slice(events, func(i, j int) bool {
+		return events[i].StartedAt.Unix() < events[j].StartedAt.Unix()
+	})
+
 	return events, nil
 }
 
@@ -79,11 +133,5 @@ func (s *Storage) Find(id uuid.UUID) (*storage.Event, error) {
 		return &event, nil
 	}
 
-	return nil, storage.ErrorEventNotFound
-}
-
-func New() *Storage {
-	return &Storage{
-		events: make(map[uuid.UUID]storage.Event),
-	}
+	return nil, nil
 }

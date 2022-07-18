@@ -183,20 +183,6 @@ func (s *Server) EventListDay(ctx context.Context, in *EventListRequest) (*Event
 	return ListResponseSuccess(events), nil
 }
 
-func (s *Server) EventListWeek(ctx context.Context, in *EventListRequest) (*EventListResponse, error) {
-	dtStart, err := time.Parse("2006-01-02", in.GetDate())
-	if err != nil {
-		return nil, fmt.Errorf("invalid date value. Expected yyyy-mm-dd, got %s", in.GetDate())
-	}
-
-	events, err := s.app.GetEventsStartedIn(ctx, dtStart, dtStart.AddDate(0, 0, 7).Sub(dtStart))
-	if err != nil {
-		return nil, err
-	}
-
-	return ListResponseSuccess(events), nil
-}
-
 func (s *Server) EventListMonth(ctx context.Context, in *EventListRequest) (*EventListResponse, error) {
 	dtStart, err := time.Parse("2006-01-02", in.GetDate())
 	if err != nil {

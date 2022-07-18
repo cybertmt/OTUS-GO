@@ -29,6 +29,8 @@ type Storage interface {
 	Delete(id uuid.UUID) error
 	Find(id uuid.UUID) (*storage.Event, error)
 	FindAll() ([]storage.Event, error)
+	FindAtDay(day time.Time) ([]storage.Event, error)
+	FindAtWeek(dayStart time.Time) ([]storage.Event, error)
 	FindAtMonth(dayStart time.Time) ([]storage.Event, error)
 }
 
@@ -113,6 +115,10 @@ func (a *App) DeleteEvent(ctx context.Context, id uuid.UUID) error {
 
 func (a *App) GetEvents(ctx context.Context) ([]storage.Event, error) {
 	return a.Storage.FindAll()
+}
+
+func (a *App) GetEventsDay(ctx context.Context, day time.Time) ([]storage.Event, error) {
+	return a.Storage.FindAtDay(day)
 }
 
 func (a *App) GetEventsMonth(ctx context.Context, dayStart time.Time) ([]storage.Event, error) {

@@ -157,6 +157,78 @@ func (s *Storage) FindAll() ([]storage.Event, error) {
 	return events, nil
 }
 
+func (s *Storage) FindAtDay(day time.Time) ([]storage.Event, error) { //nolint:dupl
+	var events []storage.Event
+
+	from := day.AddDate(0, 0, 1).Format(time.RFC3339)
+	to := day.AddDate(0, 0, 1).Format(time.RFC3339)
+
+	rows, err := s.findAtDate(from, to)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var e storage.Event
+		if err := rows.Scan(
+			&e.ID,
+			&e.Title,
+			&e.StartedAt,
+			&e.FinishedAt,
+			&e.Description,
+			&e.UserID,
+			&e.Notify,
+		); err != nil {
+			return nil, fmt.Errorf("unable to transform array result into struct: %w", err)
+		}
+
+		events = append(events, e)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return events, nil
+}
+
+func (s *Storage) FindAtWeek(dayStart time.Time) ([]storage.Event, error) { //nolint:dupl
+	var events []storage.Event
+
+	from := dayStart.AddDate(0, 0, 7).Format(time.RFC3339)
+	to := dayStart.AddDate(0, 0, 7).Format(time.RFC3339)
+
+	rows, err := s.findAtDate(from, to)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var e storage.Event
+		if err := rows.Scan(
+			&e.ID,
+			&e.Title,
+			&e.StartedAt,
+			&e.FinishedAt,
+			&e.Description,
+			&e.UserID,
+			&e.Notify,
+		); err != nil {
+			return nil, fmt.Errorf("unable to transform array result into struct: %w", err)
+		}
+
+		events = append(events, e)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return events, nil
+}
+
 func (s *Storage) FindAtMonth(dayStart time.Time) ([]storage.Event, error) { //nolint:dupl
 	var events []storage.Event
 
