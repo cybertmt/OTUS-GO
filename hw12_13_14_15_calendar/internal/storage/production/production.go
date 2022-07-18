@@ -2,26 +2,27 @@ package production
 
 import (
 	"context"
+	"log"
+
 	"github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/app"
 	internalconfig "github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/config"
 	memorystorage "github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/storage/memory"
 	sqlstorage "github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/storage/sql"
-	"log"
 )
 
-func CreateStorage(ctx context.Context, config internalconfig.Config) (app.Storage, error) {
+func CreateStorage(ctx context.Context, config internalconfig.StorageConf) (app.Storage, error) {
 	var storage app.Storage
 	var err error
-	switch config.Storage.Type {
+	switch config.Type {
 	case internalconfig.InMemory:
 		storage = memorystorage.New()
 	case internalconfig.SQL:
-		storage, err = sqlstorage.New(ctx, config.Storage.Dsn).Connect(ctx)
+		storage, err = sqlstorage.New(ctx, config.Dsn).Connect(ctx)
 		if err != nil {
 			return nil, err
 		}
 	default:
-		log.Fatalf("Unknown storage type: %s\n", config.Storage.Type)
+		log.Fatalf("Unknown storage type: %s\n", config.Type)
 	}
 	return storage, nil
 }

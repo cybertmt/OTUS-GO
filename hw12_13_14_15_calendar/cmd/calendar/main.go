@@ -3,8 +3,6 @@ package main
 import (
 	"context"
 	"flag"
-	internalgrpc "github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/server/grpc"
-	internalstore "github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/storage/production"
 	"log"
 	"os/signal"
 	"syscall"
@@ -13,7 +11,9 @@ import (
 	internalapp "github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/app"
 	internalconfig "github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/config"
 	internallogger "github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/logger"
+	internalgrpc "github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/server/grpc"
 	internalhttp "github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/server/http"
+	internalstore "github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/storage/production"
 )
 
 var configFile string
@@ -43,7 +43,7 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer cancel()
 
-	storage, err := internalstore.CreateStorage(ctx, *config)
+	storage, err := internalstore.CreateStorage(ctx, config.Storage)
 	if err != nil {
 		cancel()
 		log.Fatalf("Failed to create storage: %s", err) //nolint:gocritic
@@ -51,7 +51,7 @@ func main() {
 
 	calendar := internalapp.New(logg, storage)
 
-	serverGrpc := internalgrpc.NewServer(logg, calendar, config.HTTP.Host, config.GRPC.Port)
+	serverGrpc := internalgrpc.NewServer(logg, calendar, config.GRPC.Host, config.GRPC.Port)
 
 	go func() {
 		if err := serverGrpc.Start(); err != nil {
@@ -64,11 +64,11 @@ func main() {
 		serverGrpc.Stop()
 	}()
 
-	server := internalhttp.NewServer(logg, calendar, config.HTTP.Host, config.HTTP.Port)
+	serverHttp := internalhttp.NewServer(logg, calendar, config.HTTP.Host, config.HTTP.Port)
 
 	go func() {
-		if err := server.Start(ctx); err != nil {
-			logg.Error("failed to start grpc server: " + err.Error())
+		if err := serverHttp.Start(ctx); err != nil {
+			logg.Error("failed to start server: " + err.Error())
 			cancel()
 		}
 	}()
@@ -79,16 +79,12 @@ func main() {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 		defer cancel()
 
-		if err := server.Stop(ctx); err != nil {
+		if err := serverHttp.Stop(ctx); err != nil {
 			logg.Error("failed to stop http server: " + err.Error())
 		}
 	}()
 
 	logg.Info("calendar is running...")
 
-	if err := server.Start(ctx); err != nil {
-		cancel()
-		log.Fatalf("Failed to start http server: %s", err)
-	}
 	<-ctx.Done()
 }
