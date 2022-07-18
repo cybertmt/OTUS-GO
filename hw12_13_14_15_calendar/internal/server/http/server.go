@@ -5,26 +5,18 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/app"
+	internalapp "github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/app"
 	"github.com/gorilla/mux"
 )
 
 type Server struct {
 	host   string
 	port   string
-	logger Logger
+	logger internalapp.Logger
 	server *http.Server
 }
 
-type Logger interface {
-	Debug(message string, params ...interface{})
-	Info(message string, params ...interface{})
-	Warn(message string, params ...interface{})
-	Error(message string, params ...interface{})
-	LogHTTPRequest(r *http.Request, code, length int)
-}
-
-func NewServer(logger Logger, app *app.App, host, port string) *Server {
+func NewServer(logger internalapp.Logger, app *internalapp.App, host, port string) *Server {
 	server := &Server{
 		host:   host,
 		port:   port,
@@ -42,7 +34,7 @@ func NewServer(logger Logger, app *app.App, host, port string) *Server {
 	return server
 }
 
-func NewRouter(app *app.App) http.Handler {
+func NewRouter(app *internalapp.App) http.Handler {
 	handlers := NewServerHandlers(app)
 
 	r := mux.NewRouter()
