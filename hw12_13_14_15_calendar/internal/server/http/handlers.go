@@ -3,7 +3,7 @@ package internalhttp
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"time"
 
@@ -148,7 +148,7 @@ func (s *ServerHandlers) ListEvents(w http.ResponseWriter, r *http.Request) {
 }
 
 func ParseRequest(r *http.Request, dto interface{}) error {
-	data, err := ioutil.ReadAll(r.Body)
+	data, err := io.ReadAll(r.Body)
 	if err != nil {
 		return fmt.Errorf("failed to read body: %w", err)
 	}
