@@ -16,12 +16,6 @@ import (
 	internalstore "github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/storage/production"
 )
 
-var configFile string
-
-func init() {
-	flag.StringVar(&configFile, "config", "configs/calendar_config.yaml", "Path to configuration file")
-}
-
 func main() {
 	flag.Parse()
 
@@ -30,7 +24,7 @@ func main() {
 		return
 	}
 
-	config, err := internalconfig.LoadConfig(configFile)
+	config, err := internalconfig.LoadConfig()
 	if err != nil {
 		log.Fatalf("Failed to load config: %s", err)
 	}

@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"flag"
 	"log"
 	"os/signal"
 	"syscall"
@@ -16,16 +15,9 @@ import (
 	"github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/internal/storage/production"
 )
 
-var configFile string
-
-func init() {
-	flag.StringVar(&configFile, "config", "configs/scheduler_config.yaml", "Path to configuration file")
-}
-
 func main() {
-	flag.Parse()
 
-	config, err := internalconfig.LoadSchedulerConfig(configFile)
+	config, err := internalconfig.LoadSchedulerConfig()
 	if err != nil {
 		log.Fatalf("Failed to load config: %s", err)
 	}
