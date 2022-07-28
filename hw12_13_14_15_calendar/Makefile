@@ -28,7 +28,7 @@ version: build
 test:
 	go test -race ./internal/...
 
-	integration-tests:
+integration-tests:
 	set -e ;\
 	docker-compose up --build -d ;\
 	test_status_code=0 ;\
