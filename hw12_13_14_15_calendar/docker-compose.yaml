@@ -75,7 +75,7 @@ services:
           - ${APP_HOST}
 
   rabbit:
-    container_name: cyber-rabbit
+    container_name: c-rabbit
     image: rabbitmq:3.9.14-management
     ports:
       - "5672:5672"
