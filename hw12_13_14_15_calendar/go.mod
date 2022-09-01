@@ -6,6 +6,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
 	github.com/jackc/pgx/v4 v4.16.1
+	github.com/rabbitmq/amqp091-go v1.4.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.4
 	google.golang.org/grpc v1.47.0

@@ -135,3 +135,35 @@ func (s *Storage) Find(id uuid.UUID) (*storage.Event, error) {
 
 	return nil, nil
 }
+
+func (s *Storage) GetEventsReadyToNotify(dt time.Time) ([]storage.Event, error) {
+	var res []storage.Event
+
+	for _, e := range s.events {
+		if e.Notify.Sub(dt) <= 0 {
+			res = append(res, e)
+		}
+	}
+
+	sort.Slice(res, func(i, j int) bool {
+		return res[i].StartedAt.Unix() < res[j].StartedAt.Unix()
+	})
+
+	return res, nil
+}
+
+func (s *Storage) GetEventsOlderThan(dt time.Time) ([]storage.Event, error) {
+	var res []storage.Event
+
+	for _, e := range s.events {
+		if dt.Sub(e.StartedAt) >= 0 {
+			res = append(res, e)
+		}
+	}
+
+	sort.Slice(res, func(i, j int) bool {
+		return res[i].StartedAt.Unix() < res[j].StartedAt.Unix()
+	})
+
+	return res, nil
+}

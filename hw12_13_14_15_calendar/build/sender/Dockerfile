@@ -1,8 +1,11 @@
 # Собираем в гошке
 FROM golang:1.17.3 as build
 
-ENV BIN_FILE /opt/calendar/calendar-app
+ENV BIN_FILE /opt/calendar/sender
 ENV CODE_DIR /go/src/
+ENV CGO_ENABLED=0
+
+RUN go install github.com/antelman107/net-wait-go@latest
 
 WORKDIR ${CODE_DIR}
 
@@ -18,19 +21,18 @@ COPY . ${CODE_DIR}
 ARG LDFLAGS
 RUN CGO_ENABLED=0 go build \
         -ldflags "$LDFLAGS" \
-        -o ${BIN_FILE} cmd/calendar/*
+        -o ${BIN_FILE} cmd/sender/*
 
 # На выходе тонкий образ
 FROM alpine:3.15
 
 LABEL ORGANIZATION="OTUS Online Education"
-LABEL SERVICE="calendar"
-LABEL MAINTAINERS="student@otus.ru"
+LABEL SERVICE="calendar_sender"
+LABEL MAINTAINERS="cyber87@ya.ru"
 
-ENV BIN_FILE "/opt/calendar/calendar-app"
+ENV BIN_FILE /opt/calendar/sender
 COPY --from=build ${BIN_FILE} ${BIN_FILE}
 
-ENV CONFIG_FILE /etc/calendar/config.yaml
-COPY ./configs/config.yaml ${CONFIG_FILE}
+COPY --from=build /go/bin/net-wait-go /bin/net-wait-go
 
-CMD ${BIN_FILE} -config ${CONFIG_FILE}
+CMD ${BIN_FILE}

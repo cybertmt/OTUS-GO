@@ -1,10 +1,7 @@
 package config
 
 import (
-	"fmt"
 	"os"
-
-	yaml "gopkg.in/yaml.v3"
 )
 
 type Config struct {
@@ -12,6 +9,18 @@ type Config struct {
 	Storage StorageConf
 	HTTP    HTTPConf
 	GRPC    GRPCConf
+}
+
+type SchedulerConfig struct {
+	Logger  LoggerConf
+	Storage StorageConf
+	Rabbit  RabbitConf
+}
+
+type SenderConfig struct {
+	Logger  LoggerConf
+	Storage StorageConf
+	Rabbit  RabbitConf
 }
 
 type Level string
@@ -50,21 +59,77 @@ type GRPCConf struct {
 	Port string
 }
 
+type RabbitConf struct {
+	Dsn      string
+	Exchange string
+	Queue    string
+}
+
 func NewConfig() Config {
 	return Config{}
 }
 
-func LoadConfig(path string) (*Config, error) {
-	configContent, err := os.ReadFile(path)
-	if err != nil {
-		return nil, fmt.Errorf("invalid config file %s: %w", path, err)
-	}
+func NewSchedulerConfig() SchedulerConfig {
+	return SchedulerConfig{}
+}
 
-	config := NewConfig()
-	err = yaml.Unmarshal(configContent, &config)
-	if err != nil {
-		return nil, fmt.Errorf("invalid config file content %s: %w", path, err)
-	}
+func NewSenderConfig() SenderConfig {
+	return SenderConfig{}
+}
 
-	return &config, nil
+func LoadConfig() (*Config, error) {
+	return &Config{
+		Logger: LoggerConf{
+			Level:    Level(os.Getenv("LOG_LEVEL")),
+			Filename: os.Getenv("LOG_FILENAME"),
+		},
+		Storage: StorageConf{
+			Type: StorageType(os.Getenv("STORAGE_TYPE")),
+			Dsn:  os.Getenv("STORAGE_DSN"),
+		},
+		HTTP: HTTPConf{
+			Host: os.Getenv("HTTP_HOST"),
+			Port: os.Getenv("HTTP_PORT"),
+		},
+		GRPC: GRPCConf{
+			Host: os.Getenv("GRPC_HOST"),
+			Port: os.Getenv("GRPC_PORT"),
+		},
+	}, nil
+}
+
+func LoadSchedulerConfig() (*SchedulerConfig, error) {
+	return &SchedulerConfig{
+		Logger: LoggerConf{
+			Level:    Level(os.Getenv("LOG_LEVEL")),
+			Filename: os.Getenv("LOG_FILENAME"),
+		},
+		Storage: StorageConf{
+			Type: StorageType(os.Getenv("STORAGE_TYPE")),
+			Dsn:  os.Getenv("STORAGE_DSN"),
+		},
+		Rabbit: RabbitConf{
+			Dsn:      os.Getenv("RABBIT_DSN"),
+			Exchange: os.Getenv("RABBIT_EXCHANGE"),
+			Queue:    os.Getenv("RABBIT_QUEUE"),
+		},
+	}, nil
+}
+
+func LoadSenderConfig() (*SenderConfig, error) {
+	return &SenderConfig{
+		Logger: LoggerConf{
+			Level:    Level(os.Getenv("LOG_LEVEL")),
+			Filename: os.Getenv("LOG_FILENAME"),
+		},
+		Storage: StorageConf{
+			Type: StorageType(os.Getenv("STORAGE_TYPE")),
+			Dsn:  os.Getenv("STORAGE_DSN"),
+		},
+		Rabbit: RabbitConf{
+			Dsn:      os.Getenv("RABBIT_DSN"),
+			Exchange: os.Getenv("RABBIT_EXCHANGE"),
+			Queue:    os.Getenv("RABBIT_QUEUE"),
+		},
+	}, nil
 }
