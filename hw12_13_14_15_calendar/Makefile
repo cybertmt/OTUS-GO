@@ -32,7 +32,7 @@ integration-tests:
 	set -e ;\
 	docker-compose up --build -d ;\
 	test_status_code=0 ;\
-	docker-compose run tests go test github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/cmd/tests || test_status_code=$$? ;\
+	docker-compose run tests go test github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/tests/integrations || test_status_code=$$? ;\
 	docker-compose down ;\
 	exit $$test_status_code ;
 

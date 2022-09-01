@@ -101,7 +101,7 @@ services:
     environment:
       APP_HOST: "http://app"
       APP_HOST_GRPC: "app:8080"
-    command: [ "/bin/sh", "-c", "net-wait-go -addrs app:80,rabbit:5672 && go test github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/cmd/tests" ]
+    command: [ "/bin/sh", "-c", "net-wait-go -addrs app:80,rabbit:5672 && go test github.com/cybertmt/OTUS-GO/hw12_13_14_15_calendar/tests/integrations" ]
     volumes:
       - logs:/var/logs
 
